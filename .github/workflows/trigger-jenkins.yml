@@ -1,0 +1,22 @@
+name: Trigger Jenkins Job
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  trigger-jenkins:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Jenkins build via API
+        run: |
+          JENKINS_CRUMB=$(curl -s --user "$JENKINS_USER:$JENKINS_TOKEN" "$JENKINS_URL/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)")
+          curl -X POST "$JENKINS_URL/job/$JENKINS_JOB_NAME/build" \
+            --user "$JENKINS_USER:$JENKINS_TOKEN" \
+            -H "$JENKINS_CRUMB"
+        env:
+          JENKINS_URL: ${{ secrets.JENKINS_URL }}
+          JENKINS_USER: ${{ secrets.JENKINS_USER }}
+          JENKINS_TOKEN: ${{ secrets.JENKINS_TOKEN }}
+          JENKINS_JOB_NAME: ${{ secrets.JENKINS_JOB_NAME }}
